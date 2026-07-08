@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 
 from src.app import activities, app
@@ -6,17 +5,19 @@ from src.app import activities, app
 
 client = TestClient(app)
 
+original_activity_state = None
 
-@pytest.fixture(autouse=True)
-def restore_activity_state():
-    original_state = {
+
+def setup_function(function):
+    global original_activity_state
+    original_activity_state = {
         activity_name: activity["participants"][:]
         for activity_name, activity in activities.items()
     }
 
-    yield
 
-    for activity_name, participants in original_state.items():
+def teardown_function(function):
+    for activity_name, participants in original_activity_state.items():
         activities[activity_name]["participants"] = participants
 
 
